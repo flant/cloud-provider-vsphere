@@ -23,6 +23,7 @@ import (
 	"path"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/vmware/govmomi/find"
 	"github.com/vmware/govmomi/object"
@@ -646,7 +647,7 @@ func (dc *Datacenter) CreateFirstClassDisk(ctx context.Context,
 			VslmCreateSpecBackingSpec: types.VslmCreateSpecBackingSpec{
 				Datastore: ds,
 			},
-			ProvisioningType: string(types.BaseConfigInfoDiskFileBackingInfoProvisioningTypeThin),
+			ProvisioningType: string(types.BaseConfigInfoDiskFileBackingInfoProvisioningTypeLazyZeroedThick),
 		},
 	}
 
@@ -782,6 +783,49 @@ func (dc *Datacenter) DoesFirstClassDiskExist(ctx context.Context, fcdID string)
 
 	klog.Infof("DoesFirstClassDiskExist(%s): NOT FOUND", fcdID)
 	return nil, ErrNoDiskIDFound
+}
+
+func (dc *Datacenter) ExtendFirstClassDisk(ctx context.Context, diskID string, newCapacityInMB int64) error {
+	newClient, err := vslm.NewClient(ctx, dc.Client())
+	if err != nil {
+		return err
+	}
+
+	m := vslm.NewGlobalObjectManager(newClient)
+
+	task, err := m.ExtendDisk(ctx, types.ID{Id: diskID}, newCapacityInMB)
+	klog.Warningf("Extending disk %v with newCapacityInMB %v", diskID, newCapacityInMB)
+	if err != nil {
+		klog.Errorf("Extend(%s) failed. Err: %v", diskID, err)
+		return err
+	}
+
+	taskResult, err := task.Wait(ctx, 30*time.Second)
+	klog.Warningf("taskResult: %v", taskResult)
+	if err != nil {
+		klog.Errorf("Wait(%s) failed. Err: %v", diskID, err)
+		return err
+	}
+
+	return nil
+}
+
+func (dc *Datacenter) CountFirstClassDiskAssociations(ctx context.Context, diskID string) (count int, err error) {
+	newClient, err := vslm.NewClient(ctx, dc.Client())
+	if err != nil {
+		return 0, err
+	}
+
+	m := vslm.NewGlobalObjectManager(newClient)
+
+	associations, err := m.RetrieveAssociations(ctx, []types.ID{{Id: diskID}})
+	klog.Warningf("Associations %v", associations[0].VmDiskAssociation)
+	if err != nil {
+		klog.Errorf("RetrieveAssociations(%s) failed. Err: %v", diskID, err)
+		return 0, err
+	}
+
+	return len(associations[0].VmDiskAssociation), nil
 }
 
 // DeleteFirstClassDisk deletes an FCD.
