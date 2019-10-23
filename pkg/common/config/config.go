@@ -245,10 +245,10 @@ func (cfg *Config) FromEnv() error {
 			}
 
 			cfg.VirtualCenter[tenantRef] = &VirtualCenterConfig{
-				User:                username,
-				Password:            password,
-				TenantRef:           tenantRef,
-				VCenterIP:           vcenterIP,
+				User:                 username,
+				Password:             password,
+				TenantRef:            tenantRef,
+				VCenterIP:            vcenterIP,
 				VCenterPort:          port,
 				InsecureFlag:         insecureFlag,
 				Datacenters:          datacenters,
@@ -267,10 +267,10 @@ func (cfg *Config) FromEnv() error {
 
 	if cfg.Global.VCenterIP != "" && cfg.VirtualCenter[cfg.Global.VCenterIP] == nil {
 		cfg.VirtualCenter[cfg.Global.VCenterIP] = &VirtualCenterConfig{
-			User:                cfg.Global.User,
-			Password:            cfg.Global.Password,
-			TenantRef:           cfg.Global.VCenterIP,
-			VCenterIP:           cfg.Global.VCenterIP,
+			User:                 cfg.Global.User,
+			Password:             cfg.Global.Password,
+			TenantRef:            cfg.Global.VCenterIP,
+			VCenterIP:            cfg.Global.VCenterIP,
 			VCenterPort:          cfg.Global.VCenterPort,
 			InsecureFlag:         cfg.Global.InsecureFlag,
 			Datacenters:          cfg.Global.Datacenters,
@@ -348,11 +348,11 @@ func (cfg *Config) validateConfig() error {
 	// VirtualCenter does not already exist in the map
 	if cfg.Global.VCenterIP != "" && cfg.VirtualCenter[cfg.Global.VCenterIP] == nil {
 		vcConfig := &VirtualCenterConfig{
-			User:                cfg.Global.User,
-			Password:            cfg.Global.Password,
-			TenantRef:           cfg.Global.VCenterIP,
-			VCenterIP:           cfg.Global.VCenterIP,
-			VCenterPort:         cfg.Global.VCenterPort,
+			User:                 cfg.Global.User,
+			Password:             cfg.Global.Password,
+			TenantRef:            cfg.Global.VCenterIP,
+			VCenterIP:            cfg.Global.VCenterIP,
+			VCenterPort:          cfg.Global.VCenterPort,
 			InsecureFlag:         cfg.Global.InsecureFlag,
 			Datacenters:          cfg.Global.Datacenters,
 			RoundTripperCount:    cfg.Global.RoundTripperCount,
