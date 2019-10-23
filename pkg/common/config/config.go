@@ -227,13 +227,13 @@ func (cfg *Config) FromEnv() error {
 				ipFamily = cfg.Global.IPFamily
 			}
 
-			_, internalNetworkName, errInternalNetworkName := getEnvKeyValue("VCENTER_"+id+"_INTERNAL_NETWORK_NAME", false)
-			if errInternalNetworkName != nil {
-				internalNetworkName = cfg.Global.InternalNetworkName
+			_, internalNetworkNames, errInternalNetworkNames := getEnvKeyValue("VCENTER_"+id+"_INTERNAL_NETWORK_NAMES", false)
+			if errInternalNetworkNames != nil {
+				internalNetworkNames = cfg.Global.InternalNetworkNames
 			}
-			_, externalNetworkName, errExternalNetworkName := getEnvKeyValue("VCENTER_"+id+"_EXTERNAL_NETWORK_NAME", false)
-			if errExternalNetworkName != nil {
-				externalNetworkName = cfg.Global.ExternalNetworkName
+			_, externalNetworkNames, errExternalNetworkNames := getEnvKeyValue("VCENTER_"+id+"_EXTERNAL_NETWORK_NAMES", false)
+			if errExternalNetworkNames != nil {
+				externalNetworkNames = cfg.Global.ExternalNetworkNames
 			}
 
 			// If server is explicitly set, that means the vcenter value above is the TenantRef
@@ -249,18 +249,18 @@ func (cfg *Config) FromEnv() error {
 				Password:            password,
 				TenantRef:           tenantRef,
 				VCenterIP:           vcenterIP,
-				VCenterPort:         port,
-				InsecureFlag:        insecureFlag,
-				Datacenters:         datacenters,
-				RoundTripperCount:   roundtrip,
-				CAFile:              caFile,
-				Thumbprint:          thumbprint,
-				SecretRef:           secretRef,
-				SecretName:          secretName,
-				SecretNamespace:     secretNamespace,
-				IPFamily:            ipFamily,
-				InternalNetworkName: internalNetworkName,
-				ExternalNetworkName: externalNetworkName,
+				VCenterPort:          port,
+				InsecureFlag:         insecureFlag,
+				Datacenters:          datacenters,
+				RoundTripperCount:    roundtrip,
+				CAFile:               caFile,
+				Thumbprint:           thumbprint,
+				SecretRef:            secretRef,
+				SecretName:           secretName,
+				SecretNamespace:      secretNamespace,
+				IPFamily:             ipFamily,
+				InternalNetworkNames: internalNetworkNames,
+				ExternalNetworkNames: externalNetworkNames,
 			}
 		}
 	}
@@ -271,18 +271,18 @@ func (cfg *Config) FromEnv() error {
 			Password:            cfg.Global.Password,
 			TenantRef:           cfg.Global.VCenterIP,
 			VCenterIP:           cfg.Global.VCenterIP,
-			VCenterPort:         cfg.Global.VCenterPort,
-			InsecureFlag:        cfg.Global.InsecureFlag,
-			Datacenters:         cfg.Global.Datacenters,
-			RoundTripperCount:   cfg.Global.RoundTripperCount,
-			CAFile:              cfg.Global.CAFile,
-			Thumbprint:          cfg.Global.Thumbprint,
-			SecretRef:           DefaultCredentialManager,
-			SecretName:          cfg.Global.SecretName,
-			SecretNamespace:     cfg.Global.SecretNamespace,
-			IPFamily:            cfg.Global.IPFamily,
-			InternalNetworkName: cfg.Global.InternalNetworkName,
-			ExternalNetworkName: cfg.Global.ExternalNetworkName,
+			VCenterPort:          cfg.Global.VCenterPort,
+			InsecureFlag:         cfg.Global.InsecureFlag,
+			Datacenters:          cfg.Global.Datacenters,
+			RoundTripperCount:    cfg.Global.RoundTripperCount,
+			CAFile:               cfg.Global.CAFile,
+			Thumbprint:           cfg.Global.Thumbprint,
+			SecretRef:            DefaultCredentialManager,
+			SecretName:           cfg.Global.SecretName,
+			SecretNamespace:      cfg.Global.SecretNamespace,
+			IPFamily:             cfg.Global.IPFamily,
+			InternalNetworkNames: cfg.Global.InternalNetworkNames,
+			ExternalNetworkNames: cfg.Global.ExternalNetworkNames,
 		}
 	}
 
@@ -353,18 +353,18 @@ func (cfg *Config) validateConfig() error {
 			TenantRef:           cfg.Global.VCenterIP,
 			VCenterIP:           cfg.Global.VCenterIP,
 			VCenterPort:         cfg.Global.VCenterPort,
-			InsecureFlag:        cfg.Global.InsecureFlag,
-			Datacenters:         cfg.Global.Datacenters,
-			RoundTripperCount:   cfg.Global.RoundTripperCount,
-			CAFile:              cfg.Global.CAFile,
-			Thumbprint:          cfg.Global.Thumbprint,
-			SecretRef:           DefaultCredentialManager,
-			SecretName:          cfg.Global.SecretName,
-			SecretNamespace:     cfg.Global.SecretNamespace,
-			IPFamily:            cfg.Global.IPFamily,
-			IPFamilyPriority:    ipFamilyPriority,
-			InternalNetworkName: cfg.Global.InternalNetworkName,
-			ExternalNetworkName: cfg.Global.ExternalNetworkName,
+			InsecureFlag:         cfg.Global.InsecureFlag,
+			Datacenters:          cfg.Global.Datacenters,
+			RoundTripperCount:    cfg.Global.RoundTripperCount,
+			CAFile:               cfg.Global.CAFile,
+			Thumbprint:           cfg.Global.Thumbprint,
+			SecretRef:            DefaultCredentialManager,
+			SecretName:           cfg.Global.SecretName,
+			SecretNamespace:      cfg.Global.SecretNamespace,
+			IPFamily:             cfg.Global.IPFamily,
+			IPFamilyPriority:     ipFamilyPriority,
+			InternalNetworkNames: cfg.Global.InternalNetworkNames,
+			ExternalNetworkNames: cfg.Global.ExternalNetworkNames,
 		}
 		cfg.VirtualCenter[cfg.Global.VCenterIP] = vcConfig
 	}
@@ -449,11 +449,11 @@ func (cfg *Config) validateConfig() error {
 			vcConfig.InsecureFlag = cfg.Global.InsecureFlag
 		}
 
-		if vcConfig.InternalNetworkName == "" {
-			vcConfig.InternalNetworkName = cfg.Global.InternalNetworkName
+		if vcConfig.InternalNetworkNames == "" {
+			vcConfig.InternalNetworkNames = cfg.Global.InternalNetworkNames
 		}
-		if vcConfig.ExternalNetworkName == "" {
-			vcConfig.ExternalNetworkName = cfg.Global.ExternalNetworkName
+		if vcConfig.ExternalNetworkNames == "" {
+			vcConfig.ExternalNetworkNames = cfg.Global.ExternalNetworkNames
 		}
 	}
 
