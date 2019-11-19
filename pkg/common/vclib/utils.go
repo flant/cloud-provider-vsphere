@@ -17,10 +17,14 @@ limitations under the License.
 package vclib
 
 import (
+	"context"
 	"fmt"
 	"path/filepath"
 	"regexp"
 	"strings"
+
+	"github.com/vmware/govmomi/property"
+	"github.com/vmware/govmomi/vim25"
 
 	"github.com/vmware/govmomi/find"
 	"github.com/vmware/govmomi/object"
@@ -217,4 +221,22 @@ func ExistsInList(needle string, haystack []string, caseSensitive bool) bool {
 		}
 	}
 	return false
+}
+
+// Checks
+func ObjectHasAncestor(ctx context.Context, client *vim25.Client, object object.Reference, requiredAncestor object.Reference) (bool, error) {
+	ancestors, err := mo.Ancestors(ctx, client.Client, property.DefaultCollector(client).Reference(), object.Reference())
+	if err != nil {
+		return false, fmt.Errorf("can't collect ancestors for vm %+v", object.Reference())
+	}
+
+	var found bool
+	for _, ancestor := range ancestors {
+		if ancestor.Reference() == requiredAncestor.Reference() {
+			found = true
+			break
+		}
+	}
+
+	return found, nil
 }

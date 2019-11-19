@@ -63,6 +63,8 @@ type Config struct {
 		// will be used in respective status.addresses fields. Comma-separated.
 		InternalNetworkNames string `gcfg:"internal-network-names"`
 		ExternalNetworkNames string `gcfg:"external-network-names"`
+		// VmFolderPath (e.g. "production/ubuntu-test-runners") is a path (relative to root datacenter VM folder), in which Kubernetes VMs reside
+		VmFolderPath string `gcfg:"vm-folder-path"`
 	}
 
 	// Virtual Center configurations
@@ -121,4 +123,6 @@ type VirtualCenterConfig struct {
 	// will be used in respective status.addresses fields. Comma-separated.
 	InternalNetworkNames string `gcfg:"internal-network-names"`
 	ExternalNetworkNames string `gcfg:"external-network-names"`
+	// VmFolderPath (e.g. "production/ubuntu-test-runners") is a path (relative to root datacenter VM folder), in which Kubernetes VMs reside
+	VmFolderPath string `gcfg:"vm-folder-path"`
 }

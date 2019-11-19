@@ -20,6 +20,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"path"
 	"path/filepath"
 	"strings"
 
@@ -94,6 +95,55 @@ func (dc *Datacenter) GetVMByIP(ctx context.Context, ipAddy string) (*VirtualMac
 	return &virtualMachine, nil
 }
 
+// GetVMByIPInFolder gets the VM object from the given IP address and folder path
+func (dc *Datacenter) GetVMByIPInFolder(ctx context.Context, ipAddy, folderPath string) (*VirtualMachine, error) {
+	finder := find.NewFinder(dc.Client())
+
+	vmFolder, err := finder.Folder(ctx, path.Join("/", dc.Name(), "vm", folderPath))
+
+	s := object.NewSearchIndex(dc.Client())
+	ipAddy = strings.ToLower(strings.TrimSpace(ipAddy))
+
+	vmRefs, err := s.FindAllByIp(ctx, dc.Datacenter, ipAddy, true)
+	if err != nil {
+		klog.Errorf("Can't find VMs by IP %s: %s", ipAddy, err)
+		return nil, err
+	}
+	if len(vmRefs) == 0 {
+		klog.Errorf("Can't find VMs by IP %s: %s", ipAddy, err)
+		return nil, ErrNoVMFound
+	}
+
+	var matchingChildRef *types.ManagedObjectReference
+	for _, vmRef := range vmRefs {
+		hasAncestor, err := ObjectHasAncestor(ctx, dc.Client(), vmRef, vmFolder.Reference())
+		if err != nil {
+			klog.Errorf("can't find whether %+v has %+v ancestor: %s", vmRef, vmFolder.Reference(), err)
+			return nil, err
+		}
+
+		if hasAncestor {
+			childRef := vmRef.Reference()
+			matchingChildRef = &childRef
+			break
+		}
+	}
+
+	if matchingChildRef != nil {
+		svm := object.NewReference(s.Client(), matchingChildRef.Reference())
+		if svm == nil {
+			klog.Errorf("Unable to find VM by IP. VM IP: %s", ipAddy)
+			return nil, ErrNoVMFound
+		}
+
+		virtualMachine := VirtualMachine{svm.(*object.VirtualMachine), dc}
+		return &virtualMachine, nil
+	} else {
+		klog.Errorf("Unable to find VM by IP. VM IP: %s", ipAddy)
+		return nil, ErrNoVMFound
+	}
+}
+
 // GetVMByDNSName gets the VM object from the given dns name
 func (dc *Datacenter) GetVMByDNSName(ctx context.Context, dnsName string) (*VirtualMachine, error) {
 	s := object.NewSearchIndex(dc.Client())
@@ -111,6 +161,55 @@ func (dc *Datacenter) GetVMByDNSName(ctx context.Context, dnsName string) (*Virt
 	return &virtualMachine, nil
 }
 
+// GetVMByDNSNameInFolder gets the VM object from the given dns name in folder path
+func (dc *Datacenter) GetVMByDNSNameInFolder(ctx context.Context, dnsName, folderPath string) (*VirtualMachine, error) {
+	finder := find.NewFinder(dc.Client())
+
+	vmFolder, err := finder.Folder(ctx, path.Join("/", dc.Name(), "vm", folderPath))
+
+	s := object.NewSearchIndex(dc.Client())
+	dnsName = strings.ToLower(strings.TrimSpace(dnsName))
+
+	vmRefs, err := s.FindAllByDnsName(ctx, dc.Datacenter, dnsName, true)
+	if err != nil {
+		klog.Errorf("Can't find VMs by DNS Name %s: %s", dnsName, err)
+		return nil, err
+	}
+	if len(vmRefs) == 0 {
+		klog.Errorf("Can't find VMs by DNS Name %s: %s", dnsName, err)
+		return nil, ErrNoVMFound
+	}
+
+	var matchingChildRef *types.ManagedObjectReference
+	for _, vmRef := range vmRefs {
+		hasAncestor, err := ObjectHasAncestor(ctx, dc.Client(), vmRef, vmFolder.Reference())
+		if err != nil {
+			klog.Errorf("can't find whether %+v has %+v ancestor: %s", vmRef, vmFolder.Reference(), err)
+			return nil, err
+		}
+
+		if hasAncestor {
+			childRef := vmRef.Reference()
+			matchingChildRef = &childRef
+			break
+		}
+	}
+
+	if matchingChildRef != nil {
+		svm := object.NewReference(s.Client(), matchingChildRef.Reference())
+		if svm == nil {
+			klog.Errorf("Unable to find VM by DNS Name. VM DNS Name: %s", dnsName)
+			return nil, ErrNoVMFound
+		}
+
+		virtualMachine := VirtualMachine{svm.(*object.VirtualMachine), dc}
+		return &virtualMachine, nil
+	} else {
+		klog.Errorf("Unable to find VM by DNS Name. VM DNS Name: %s", dnsName)
+		return nil, ErrNoVMFound
+	}
+}
+
 // GetVMByUUID gets the VM object from the given vmUUID
 func (dc *Datacenter) GetVMByUUID(ctx context.Context, vmUUID string) (*VirtualMachine, error) {
 	s := object.NewSearchIndex(dc.Client())
@@ -126,6 +225,58 @@ func (dc *Datacenter) GetVMByUUID(ctx context.Context, vmUUID string) (*VirtualM
 	}
 	virtualMachine := VirtualMachine{svm.(*object.VirtualMachine), dc}
 	return &virtualMachine, nil
+}
+
+// GetVMByUUIDInFolder gets the VM object from the given vmUUID address and folder path
+func (dc *Datacenter) GetVMByUUIDInFolder(ctx context.Context, vmUUID, folderPath string) (*VirtualMachine, error) {
+	finder := find.NewFinder(dc.Client())
+
+	vmFolder, err := finder.Folder(ctx, path.Join("/", dc.Name(), "vm", folderPath))
+	if err != nil {
+		return nil, err
+	}
+
+	s := object.NewSearchIndex(dc.Client())
+	vmUUID = strings.ToLower(strings.TrimSpace(vmUUID))
+
+	vmRefs, err := s.FindAllByUuid(ctx, dc.Datacenter, vmUUID, true, nil)
+	if err != nil {
+		klog.Errorf("Can't find VMs by UUID %s: %s", vmUUID, err)
+		return nil, err
+	}
+	if len(vmRefs) == 0 {
+		klog.Errorf("Can't find VMs by UUID %s: %s", vmUUID, err)
+		return nil, ErrNoVMFound
+	}
+
+	var matchingChildRef *types.ManagedObjectReference
+	for _, vmRef := range vmRefs {
+		hasAncestor, err := ObjectHasAncestor(ctx, dc.Client(), vmRef, vmFolder.Reference())
+		if err != nil {
+			klog.Errorf("can't find whether %+v has %+v ancestor: %s", vmRef, vmFolder.Reference(), err)
+			return nil, err
+		}
+
+		if hasAncestor {
+			childRef := vmRef.Reference()
+			matchingChildRef = &childRef
+			break
+		}
+	}
+
+	if matchingChildRef != nil {
+		svm := object.NewReference(s.Client(), matchingChildRef.Reference())
+		if svm == nil {
+			klog.Errorf("Unable to find VM by UUID. VM UUID: %s", vmUUID)
+			return nil, ErrNoVMFound
+		}
+
+		virtualMachine := VirtualMachine{svm.(*object.VirtualMachine), dc}
+		return &virtualMachine, nil
+	} else {
+		klog.Errorf("Unable to find VM by UUID. VM UUID: %s", vmUUID)
+		return nil, ErrNoVMFound
+	}
 }
 
 // GetVMByPath gets the VM object from the given vmPath

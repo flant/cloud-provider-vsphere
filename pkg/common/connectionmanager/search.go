@@ -167,13 +167,25 @@ func (cm *ConnectionManager) WhichVCandDCByNodeID(ctx context.Context, nodeID st
 				var vm *vclib.VirtualMachine
 				var err error
 
-				switch searchBy {
-				case FindVMByUUID:
-					vm, err = res.datacenter.GetVMByUUID(ctx, myNodeID)
-				case FindVMByIP:
-					vm, err = res.datacenter.GetVMByIP(ctx, myNodeID)
-				default:
-					vm, err = res.datacenter.GetVMByDNSName(ctx, myNodeID)
+				folderPath := cm.VsphereInstanceMap[res.tenantRef].Cfg.VmFolderPath
+				if len(folderPath) == 0 {
+					switch searchBy {
+					case FindVMByUUID:
+						vm, err = res.datacenter.GetVMByUUID(ctx, myNodeID)
+					case FindVMByIP:
+						vm, err = res.datacenter.GetVMByIP(ctx, myNodeID)
+					default:
+						vm, err = res.datacenter.GetVMByDNSName(ctx, myNodeID)
+					}
+				} else {
+					switch searchBy {
+					case FindVMByUUID:
+						vm, err = res.datacenter.GetVMByUUIDInFolder(ctx, myNodeID, folderPath)
+					case FindVMByIP:
+						vm, err = res.datacenter.GetVMByIPInFolder(ctx, myNodeID, folderPath)
+					default:
+						vm, err = res.datacenter.GetVMByDNSNameInFolder(ctx, myNodeID, folderPath)
+					}
 				}
 
 				if err != nil {
