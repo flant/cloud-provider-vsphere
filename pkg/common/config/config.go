@@ -150,6 +150,10 @@ func (cfg *Config) FromEnv() error {
 		cfg.Global.IPFamily = DefaultIPFamily
 	}
 
+	if v := os.Getenv("VSPHERE_VM_FOLDER_PATH"); v != "" {
+		cfg.Global.VmFolderPath = v
+	}
+
 	//Build VirtualCenter from ENVs
 	for _, e := range os.Environ() {
 		pair := strings.Split(e, "=")
@@ -236,6 +240,11 @@ func (cfg *Config) FromEnv() error {
 				externalNetworkNames = cfg.Global.ExternalNetworkNames
 			}
 
+			_, vmFolderPath, errVmFolderPath := getEnvKeyValue("VCENTER_"+id+"_VM_FOLDER_PATH", false)
+			if errVmFolderPath != nil {
+				vmFolderPath = cfg.Global.VmFolderPath
+			}
+
 			// If server is explicitly set, that means the vcenter value above is the TenantRef
 			vcenterIP := vcenter
 			tenantRef := vcenter
@@ -261,6 +270,7 @@ func (cfg *Config) FromEnv() error {
 				IPFamily:             ipFamily,
 				InternalNetworkNames: internalNetworkNames,
 				ExternalNetworkNames: externalNetworkNames,
+				VmFolderPath:         vmFolderPath,
 			}
 		}
 	}
@@ -283,6 +293,7 @@ func (cfg *Config) FromEnv() error {
 			IPFamily:             cfg.Global.IPFamily,
 			InternalNetworkNames: cfg.Global.InternalNetworkNames,
 			ExternalNetworkNames: cfg.Global.ExternalNetworkNames,
+			VmFolderPath:         cfg.Global.VmFolderPath,
 		}
 	}
 
@@ -365,6 +376,7 @@ func (cfg *Config) validateConfig() error {
 			IPFamilyPriority:     ipFamilyPriority,
 			InternalNetworkNames: cfg.Global.InternalNetworkNames,
 			ExternalNetworkNames: cfg.Global.ExternalNetworkNames,
+			VmFolderPath:         cfg.Global.VmFolderPath,
 		}
 		cfg.VirtualCenter[cfg.Global.VCenterIP] = vcConfig
 	}
@@ -454,6 +466,10 @@ func (cfg *Config) validateConfig() error {
 		}
 		if vcConfig.ExternalNetworkNames == "" {
 			vcConfig.ExternalNetworkNames = cfg.Global.ExternalNetworkNames
+		}
+
+		if vcConfig.VmFolderPath == "" {
+			vcConfig.VmFolderPath = cfg.Global.VmFolderPath
 		}
 	}
 
