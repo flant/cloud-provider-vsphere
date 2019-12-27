@@ -291,6 +291,17 @@ func (nm *NodeManager) DiscoverNode(nodeID string, searchBy cm.FindVM) error {
 		klog.Warningf("Unable to find a suitable IP address. ipFamily: %s", ipFamily)
 	}
 
+	var internalAddressExists bool
+	for _, addr := range addrs {
+		if addr.Type == v1.NodeInternalIP {
+			internalAddressExists = true
+			break
+		}
+	}
+	if !internalAddressExists {
+		return fmt.Errorf("not a single internalAddressFound in Node addresses:\n%+v", addrs)
+	}
+
 	klog.V(2).Infof("Found node %s as vm=%+v in vc=%s and datacenter=%s",
 		nodeID, vmDI.VM, vmDI.VcServer, vmDI.DataCenter.Name())
 	klog.V(2).Info("Hostname: ", oVM.Guest.HostName, " UUID: ", oVM.Summary.Config.Uuid)
