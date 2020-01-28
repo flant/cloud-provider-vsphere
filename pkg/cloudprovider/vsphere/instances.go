@@ -152,6 +152,10 @@ func (i *instances) CurrentNodeName(ctx context.Context, hostname string) (types
 func (i *instances) InstanceExistsByProviderID(ctx context.Context, providerID string) (bool, error) {
 	klog.V(4).Info("instances.InstanceExistsByProviderID() called with ", providerID)
 
+	if providerID == "static://" {
+		return true, nil
+	}
+
 	// Check if node has been discovered already
 	uid := GetUUIDFromProviderID(providerID)
 	if _, ok := i.nodeManager.nodeUUIDMap[uid]; ok {
