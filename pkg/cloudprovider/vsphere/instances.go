@@ -152,7 +152,7 @@ func (i *instances) CurrentNodeName(ctx context.Context, hostname string) (types
 func (i *instances) InstanceExistsByProviderID(ctx context.Context, providerID string) (bool, error) {
 	klog.V(4).Info("instances.InstanceExistsByProviderID() called with ", providerID)
 
-	if providerID == "pre-existing-node" {
+	if providerID == "static://" {
 		return true, nil
 	}
 
